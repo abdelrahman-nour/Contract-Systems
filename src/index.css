@@ -1,0 +1,239 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0a0c09;
+  --color-panel: #12150f;
+  --color-line: #262b20;
+  --color-mute: #8e9785;
+  --color-paper: #eef2e8;
+  --color-lime: #c3d435;
+  --color-lime-ink: #10140a;
+  --color-danger: #f2876b;
+
+  --font-display: "Alexandria", Tahoma, sans-serif;
+  --font-body: "IBM Plex Sans Arabic", Tahoma, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background: var(--color-ink);
+  }
+  body {
+    @apply bg-ink text-paper font-body antialiased;
+    font-size: 16px;
+    line-height: 1.75;
+  }
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-lime);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  .field {
+    @apply w-full rounded-xl border border-line bg-ink px-4 py-3 text-paper outline-none transition-colors placeholder:text-mute/70 focus:border-lime;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-lime px-6 py-4 font-display text-lg font-bold text-lime-ink transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:brightness-100;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line px-6 py-4 font-display text-lg font-bold text-paper transition hover:border-lime;
+  }
+  .checkbox {
+    @apply grid size-[22px] shrink-0 cursor-pointer appearance-none place-content-center rounded-md border-2 border-mute bg-transparent disabled:cursor-not-allowed disabled:opacity-40;
+  }
+  .checkbox:checked {
+    @apply border-lime bg-lime;
+  }
+  .checkbox:checked::after {
+    content: "";
+    width: 10px;
+    height: 6px;
+    border-left: 2.5px solid var(--color-lime-ink);
+    border-bottom: 2.5px solid var(--color-lime-ink);
+    transform: rotate(-45deg) translate(1px, -1px);
+  }
+}
+
+@utility page-gutter {
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+@keyframes rise {
+  from { transform: translateY(8px); opacity: 0.001; }
+  to { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .reveal { animation: rise 0.5s ease-out both; }
+}
+
+/* ===== PDF contract sheet (A4 @ 96dpi). Plain hex colors, no letter-spacing (keeps Arabic letters joined). ===== */
+/* Zero-size clipped box: keeps the sheet rendered (html2canvas needs that) without adding any scroll in RTL */
+.pdf-stage {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.sheet-page {
+  width: 794px;
+  height: 1123px;
+  box-sizing: border-box;
+  padding: 52px 60px 40px;
+  background: #ffffff;
+  color: #15180f;
+  font-family: "IBM Plex Sans Arabic", Tahoma, sans-serif;
+  font-size: 13px;
+  line-height: 1.85;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.sheet-page h2 {
+  font-family: "Alexandria", Tahoma, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+.sheet-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-bottom: 3px solid #15180f;
+  padding-bottom: 14px;
+}
+.sheet-logo {
+  font-family: "Alexandria", Tahoma, sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1.2;
+  direction: ltr;
+  text-align: right;
+}
+.sheet-logo span { background: #c3d435; padding: 0 5px; border-radius: 4px; }
+.sheet-title { font-family: "Alexandria", Tahoma, sans-serif; font-size: 21px; font-weight: 700; margin: 4px 0 0; }
+.sheet-meta { font-family: "JetBrains Mono", monospace; font-size: 11px; color: #555c4c; direction: ltr; text-align: left; line-height: 1.7; }
+.sheet-table { width: 100%; border-collapse: collapse; }
+.sheet-table td { padding: 7px 12px; border: 1px solid #d9ddd2; vertical-align: top; }
+.sheet-table td:first-child { width: 30%; background: #f3f5ef; font-weight: 600; }
+.sheet-list { margin: 0; padding-right: 20px; }
+.sheet-list li { margin-bottom: 4px; }
+.sheet-price { display: inline-block; background: #15180f; color: #c3d435; font-weight: 700; padding: 0 10px; border-radius: 4px; }
+.sheet-sign { border: 2px solid #15180f; border-radius: 8px; padding: 16px 20px; }
+.sheet-foot {
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid #d9ddd2;
+  font-size: 10px;
+  color: #6b7262;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ===================== Motion ===================== */
+
+/* Soft lime glow behind the top of the page */
+.page-glow {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 70vh;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 55% at 70% 0%, rgb(195 212 53 / 0.13), transparent 70%),
+    radial-gradient(30% 40% at 15% 10%, rgb(195 212 53 / 0.06), transparent 70%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .page-glow { animation: glow-drift 14s ease-in-out infinite alternate; }
+}
+@keyframes glow-drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(-4%, 2%, 0) scale(1.08); }
+}
+
+/* Staggered fade-up: children with .anim-up play once their parent gets .is-in */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(18px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.anim-up { opacity: 0; }
+.is-in .anim-up,
+.anim-up.is-in {
+  animation: fade-up 0.75s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 80ms);
+}
+
+/* Intro splash */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: var(--color-ink);
+  transition: transform 0.7s cubic-bezier(0.7, 0, 0.2, 1), opacity 0.7s ease;
+}
+.intro.is-out { transform: translateY(-100%); }
+.intro-logo {
+  clip-path: inset(0 100% 0 0);
+  animation: logo-wipe 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.15s forwards;
+}
+@keyframes logo-wipe {
+  from { clip-path: inset(0 100% 0 0); filter: blur(6px); }
+  to { clip-path: inset(0 0 0 0); filter: blur(0); }
+}
+.intro-line {
+  height: 2px;
+  width: 100%;
+  background: var(--color-lime);
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: line-grow 0.6s cubic-bezier(0.65, 0, 0.35, 1) 0.85s forwards;
+  box-shadow: 0 0 18px rgb(195 212 53 / 0.6);
+}
+@keyframes line-grow { to { transform: scaleX(1); } }
+.intro-tag {
+  opacity: 0;
+  animation: fade-up 0.6s ease-out 1.15s forwards;
+}
+
+/* Signed: animated check + ring */
+.check-draw path {
+  stroke-dasharray: 26;
+  stroke-dashoffset: 26;
+  animation: draw 0.5s ease-out 0.35s forwards;
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.badge-pop { animation: pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
+@keyframes pop { from { transform: scale(0.4); opacity: 0; } to { transform: none; opacity: 1; } }
+.badge-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid var(--color-lime);
+  animation: ring 1.4s ease-out 0.3s 2 both;
+}
+@keyframes ring {
+  from { transform: scale(1); opacity: 0.7; }
+  to { transform: scale(1.8); opacity: 0; }
+}
+
+/* Buttons: small lift */
+.btn-primary:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 10px 30px -10px rgb(195 212 53 / 0.55); }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-up, .intro-logo, .intro-tag { opacity: 1 !important; animation: none !important; clip-path: none !important; }
+  .intro-line { transform: none; animation: none; }
+  .check-draw path { stroke-dashoffset: 0; animation: none; }
+  .badge-pop, .badge-ring { animation: none; }
+  .intro { transition: none; }
+}
